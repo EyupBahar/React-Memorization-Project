@@ -1,23 +1,58 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useState, useEffect, useMemo, useCallback} from 'react';
+import Header from './components/Header';
+import List from './components/List';
+import fs from './assets/fs.png';
+import aws from './assets/aws.png';
+import axios from 'axios';
+
 
 function App() {
+  const [counter, setCounter] = useState(0);
+  const [img, setImg] = useState();
+  const [studentsList, setStudentsList] = useState([]);
+  // console.log('studentsList', studentsList)
+  const [text, setText] = useState("");
+  console.log('text:', text)
+  const [search, setSearch] = useState("");
+  console.log('search:', search)
+
+
+  useEffect(() => {
+    axios.get("https://jsonplaceholder.typicode.com/users")
+    .then(res => setStudentsList(res.data));
+  },[])
+
+  const handleText = (e) => {
+    setText(e.target.value);
+  }
+
+  const handleSearch = () => {
+    setSearch(text);
+  }
+
+  const filteredStudents = useMemo(() => studentsList.filter(student => {
+    return student.name.toLowerCase().includes(search.toLowerCase())
+  }),[search, studentsList])
+
+  const add = useCallback(() => {
+    setStudentsList([...studentsList, {id: studentsList.length + 1, name: "Edward CW"}])
+  },[studentsList])
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header img={img}/>
+      <p>Counter: {counter}</p>
+      <button onClick={() => setCounter(counter+1)}>Increase</button>
+      <button onClick={() => setImg(fs)}>FS</button>
+      <button onClick={() => setImg(aws)}>AWS</button>
+      <button onClick={() => setImg("")}>Reset</button>
+      <hr />
+      <input type="text" value={text} onChange={handleText} />
+      <button onClick={handleSearch}>Search</button>
+
+      <List students={filteredStudents} add={add} />
+
     </div>
   );
 }
